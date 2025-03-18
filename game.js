@@ -1,55 +1,113 @@
-'use strict';
-(() => {
-    const FIGURES_RUS = ["камень", "ножницы", "бумага"];
-    const result = {
-        computer: 0,
-        player: 0,
+"use strict";
+
+  (function () {
+    let playerBalls = 5;
+    let botBalls = 5;
+    let playerName = prompt("Введите имя", "");
+    let botName = "Бот";
+    
+    const getRandomInt = (min, max) =>
+      Math.floor(Math.random() * (max - min + 1)) + min;
+    
+    const playRPS = () => {
+      const choices = ["Камень", "Ножницы", "Бумага"];
+      const playerChoice = prompt(
+        `${playerName}, выберите: ${choices.join(", ")}`
+      );
+      const botChoice = choices[getRandomInt(0, 2)];
+      alert(`${botName} выбрал: ${botChoice}`);
+    
+      if (
+        (playerChoice === "Камень" && botChoice === "Ножницы") ||
+        (playerChoice === "Ножницы" && botChoice === "Бумага") ||
+        (playerChoice === "Бумага" && botChoice === "Камень")
+      ) {
+        alert(`${playerName} выиграл! Вы начинаете первым.`);
+        return true; 
+      } else if (playerChoice === botChoice) {
+        alert("Ничья! Игрок начинает первым.");
+        return true; 
+      } else {
+        alert(`${botName} выиграл! Он начинает первым.`);
+        return false;
+      }
     };
-
-    const getRandomIntInclusive = (min, max) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
-
-    const playRound = (playerChoice) => {
-        const computerChoice = FIGURES_RUS[getRandomIntInclusive(0, FIGURES_RUS.length - 1)];
-        let outcome = '';
-
-        if (playerChoice === computerChoice) {
-            outcome = 'Ничья!';
-        } else if (
-            (playerChoice === 'камень' && computerChoice === 'ножницы') ||
-            (playerChoice === 'ножницы' && computerChoice === 'бумага') ||
-            (playerChoice === 'бумага' && computerChoice === 'камень')
-        ) {
-            outcome = 'Вы выиграли!';
-            result.player++;
+    
+    const playMarbles = (firstPlayer) => {
+      while (playerBalls > 0 && botBalls > 0) {
+        let currentPlayer = firstPlayer ? playerName : botName;
+        let currentBalls = firstPlayer ? playerBalls : botBalls;
+    
+        let guess, playedBalls;
+        if (currentPlayer === playerName) {
+          playedBalls = parseInt(
+            prompt(`Сколько шариков вы хотите загадать? (1 - ${currentBalls})`),
+            10
+          );
+          while (
+            isNaN(playedBalls) ||
+            playedBalls < 1 ||
+            playedBalls > currentBalls
+          ) {
+            playedBalls = parseInt(
+              prompt(
+                `Недопустимое значение. Сколько шариков вы хотите загадать? (1 - ${currentBalls})`
+              ),
+              10
+            );
+          }
+          guess = confirm(
+            "Угадайте четное количество? (ОК - четное, Отмена - нечетное)"
+          )
+            ? "even"
+            : "odd";
         } else {
-            outcome = 'Компьютер выиграл!';
-            result.computer++;
+          playedBalls = getRandomInt(1, currentBalls);
+          guess = getRandomInt(0, 1) ? "even" : "odd";
         }
-
-        alert(`Вы выбрали: ${playerChoice}\n Компьютер выбрал: ${computerChoice}\n Результат: ${outcome}`);
-    };
-
-    const game = () => {
-        const playerChoice = prompt("Введите камень, ножницы или бумага (или отмена для выхода):");
-        
-        if (playerChoice === null) {
-            const confirmExit = confirm("Вы точно хотите выйти?");
-            if (confirmExit) {
-                alert(`Итог: Вы - ${result.player}, Компьютер - ${result.computer}`);
-                return;
-            } else {
-                game(); 
-            }
-        } else if (FIGURES_RUS.includes(playerChoice)) {
-            playRound(playerChoice);
-            game(); 
+    
+        const totalPlayedBalls = playedBalls;
+    
+        const isEven = totalPlayedBalls % 2 === 0;
+        const botGuessedCorrectly =
+          (isEven && guess === "even") || (!isEven && guess === "odd");
+    
+        if (botGuessedCorrectly) {
+          alert(`${botName} угадал! Он забирает все шарики.`);
+          botBalls += totalPlayedBalls;
+          firstPlayer
+            ? (playerBalls -= totalPlayedBalls)
+            : (botBalls -= totalPlayedBalls);
         } else {
-            alert("Некорректный ввод. Пожалуйста, попробуйте снова.");
-            game(); 
+          alert(`${botName} не угадал! Вы забираете все шарики.`);
+          playerBalls += totalPlayedBalls;
+          firstPlayer
+            ? (playerBalls -= totalPlayedBalls)
+            : (botBalls += totalPlayedBalls);
         }
+    
+        firstPlayer = !firstPlayer;
+      }
+    
+      if (playerBalls <= 0) {
+        alert(`${botName} победил!`);
+      } else {
+        alert(`${playerName} победил!`);
+      }
     };
-
-    window.RSP = game;
-})();
+    
+    const startGame = () => {
+      playerBalls = 5; 
+      botBalls = 5; 
+    
+      const firstPlayer = playRPS(); 
+      playMarbles(firstPlayer); 
+    
+      const playAgain = confirm("Хотите сыграть еще?");
+      if (playAgain) {
+        startGame(); 
+      }
+    };
+    
+    window.Game = startGame;
+  })();

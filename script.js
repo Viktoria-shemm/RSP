@@ -1,5 +1,5 @@
 'use strict';
 
-const gamePlay = window.RSP();
+const gamePlay = window.Game();
 
 gamePlay();
