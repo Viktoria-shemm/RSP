@@ -5,6 +5,11 @@
     let botBalls = 5;
     let playerName = prompt("Введите имя", "");
     let botName = "Бот";
+
+    alert(`Старт игры!
+        Количество шариков:
+        ${playerName}: 5
+        ${botName}: 5`);
     
     const getRandomInt = (min, max) =>
       Math.floor(Math.random() * (max - min + 1)) + min;
