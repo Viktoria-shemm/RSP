@@ -1,118 +1,148 @@
 "use strict";
 
-  (function () {
-    let playerBalls = 5;
-    let botBalls = 5;
-    let playerName = prompt("Введите имя", "");
-    let botName = "Бот";
+(function () {
+  let playerBalls = 5;
+  let botBalls = 5;
+  let playerName = prompt("Введите имя", "") || "Игрок";
+  let botName = "Бот";
 
-    alert(`Старт игры!
+  alert(`Старт игры!
         Количество шариков:
         ${playerName}: 5
         ${botName}: 5`);
-    
-    const getRandomInt = (min, max) =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    const playRPS = () => {
-      const choices = ["Камень", "Ножницы", "Бумага"];
-      const playerChoice = prompt(
-        `${playerName}, выберите: ${choices.join(", ")}`
+
+  const choices = ["камень", "ножницы", "бумага"];
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function getPlayerChoice() {
+    let playerChoice = prompt(
+      "Выберите: камень, ножницы или бумага"
+    ).toLowerCase();
+    const matchedOption = choices.find((option) =>
+      option.startsWith(playerChoice)
+    );
+    if (matchedOption) {
+      return matchedOption;
+    } else {
+      alert("Неверный выбор! Пожалуйста, выберите камень, ножницы или бумагу.");
+      return getPlayerChoice();
+    }
+  }
+
+  function playRockPaperScissors() {
+    const playerChoice = getPlayerChoice();
+    const botChoice = choices[getRandomInt(0, 2)];
+    alert(`Бот выбрал: ${botChoice}`);
+
+    if (playerChoice === botChoice) {
+      alert("Ничья!");
+      return playRockPaperScissors();
+    } else if (
+      (playerChoice === "камень" && botChoice === "ножницы") ||
+      (playerChoice === "ножницы" && botChoice === "бумага") ||
+      (playerChoice === "бумага" && botChoice === "камень")
+    ) {
+      alert("Вы выиграли!");
+      return true;
+    } else {
+      alert("Бот выиграл!");
+      return false;
+    }
+  }
+
+  function askForBalls(player) {
+    let balls;
+    do {
+      balls = prompt(
+        `Сколько шариков вы хотите загадать? (1 - ${
+          player ? playerBalls : botBalls
+        })`
       );
-      const botChoice = choices[getRandomInt(0, 2)];
-      alert(`${botName} выбрал: ${botChoice}`);
-    
-      if (
-        (playerChoice === "Камень" && botChoice === "Ножницы") ||
-        (playerChoice === "Ножницы" && botChoice === "Бумага") ||
-        (playerChoice === "Бумага" && botChoice === "Камень")
-      ) {
-        alert(`${playerName} выиграл! Вы начинаете первым.`);
-        return true; 
-      } else if (playerChoice === botChoice) {
-        alert("Ничья! Игрок начинает первым.");
-        return true; 
-      } else {
-        alert(`${botName} выиграл! Он начинает первым.`);
-        return false;
-      }
-    };
-    
-    const playMarbles = (firstPlayer) => {
-      while (playerBalls > 0 && botBalls > 0) {
-        let currentPlayer = firstPlayer ? playerName : botName;
-        let currentBalls = firstPlayer ? playerBalls : botBalls;
-    
-        let guess, playedBalls;
-        if (currentPlayer === playerName) {
-          playedBalls = parseInt(
-            prompt(`Сколько шариков вы хотите загадать? (1 - ${currentBalls})`),
-            10
-          );
-          while (
-            isNaN(playedBalls) ||
-            playedBalls < 1 ||
-            playedBalls > currentBalls
-          ) {
-            playedBalls = parseInt(
-              prompt(
-                `Недопустимое значение. Сколько шариков вы хотите загадать? (1 - ${currentBalls})`
-              ),
-              10
-            );
-          }
-          guess = confirm(
-            "Угадайте четное количество? (ОК - четное, Отмена - нечетное)"
-          )
-            ? "even"
-            : "odd";
+      if (balls === null) return null;
+      balls = parseInt(balls);
+    } while (
+      isNaN(balls) ||
+      balls < 1 ||
+      balls > (player ? playerBalls : botBalls)
+    );
+    return balls;
+  }
+
+  function isOdd(num) {
+    return num % 2 !== 0;
+  }
+
+  function playMarbles(startingPlayer) {
+    let currentPlayer = startingPlayer;
+
+    while (playerBalls > 0 && botBalls > 0) {
+      if (currentPlayer) {
+        let ballsToGuess = askForBalls(true);
+        if (ballsToGuess === null) return;
+
+        let isPlayerEven = !isOdd(ballsToGuess);
+        let botGuess = Math.random() < 0.5 ? "нечетное" : "четное";
+        alert(`Бот угадывает: ${botGuess}`);
+        let isBotEven = botGuess === "четное";
+
+        if (isPlayerEven === isBotEven) {
+          alert("Бот угадал! Он забирает ваши шарики.");
+          botBalls += ballsToGuess;
+          playerBalls -= ballsToGuess;
+          alert(`У Вас ${playerBalls} шариков`);
         } else {
-          playedBalls = getRandomInt(1, currentBalls);
-          guess = getRandomInt(0, 1) ? "even" : "odd";
+          alert("Бот не угадал! Вы забираете шарики.");
+          playerBalls += ballsToGuess;
+          botBalls -= ballsToGuess;
+          alert(`У Вас ${playerBalls} шариков`);
         }
-    
-        const totalPlayedBalls = playedBalls;
-    
-        const isEven = totalPlayedBalls % 2 === 0;
-        const botGuessedCorrectly =
-          (isEven && guess === "even") || (!isEven && guess === "odd");
-    
-        if (botGuessedCorrectly) {
-          alert(`${botName} угадал! Он забирает все шарики.`);
-          botBalls += totalPlayedBalls;
-          firstPlayer
-            ? (playerBalls -= totalPlayedBalls)
-            : (botBalls -= totalPlayedBalls);
-        } else {
-          alert(`${botName} не угадал! Вы забираете все шарики.`);
-          playerBalls += totalPlayedBalls;
-          firstPlayer
-            ? (playerBalls -= totalPlayedBalls)
-            : (botBalls += totalPlayedBalls);
-        }
-    
-        firstPlayer = !firstPlayer;
-      }
-    
-      if (playerBalls <= 0) {
-        alert(`${botName} победил!`);
       } else {
-        alert(`${playerName} победил!`);
+        let ballsToGuessBot = getRandomInt(1, botBalls);
+
+        let playerGuess = confirm(
+          `Угадайте, четное или нечетное количество шариков загадал бот? (Нажмите "ОК" для "четное" или "Отмена" для "нечетное")`
+        );
+        if (playerGuess === null) return;
+        alert(`Бот загадал ${ballsToGuessBot} шариков.`);
+
+        let isPlayerEven = !playerGuess;
+        let isBotEven = isOdd(ballsToGuessBot);
+
+        if (isPlayerEven === isBotEven) {
+          alert("Вы угадали! Вы зарабатываете шарики.");
+          playerBalls += ballsToGuessBot;
+          botBalls -= ballsToGuessBot;
+        } else {
+          alert("Вы не угадали! Бот забирает ваши шарики.");
+          playerBalls -= ballsToGuessBot;
+          botBalls += ballsToGuessBot;
+        }
       }
-    };
-    
-    const startGame = () => {
-      playerBalls = 5; 
-      botBalls = 5; 
-    
-      const firstPlayer = playRPS(); 
-      playMarbles(firstPlayer); 
-    
-      const playAgain = confirm("Хотите сыграть еще?");
-      if (playAgain) {
-        startGame(); 
-      }
-    };
-    
-    window.Game = startGame;
-  })();
+
+      currentPlayer = !currentPlayer;
+    }
+
+    if (playerBalls <= 0) {
+      alert("Вы проиграли! У вас больше нет шариков.");
+    } else {
+      alert("Бот проиграл! Вы выиграли!");
+    }
+  }
+
+  function startGame() {
+    const firstPlayer = playRockPaperScissors();
+    playMarbles(firstPlayer);
+    if (confirm("Хотите сыграть еще?")) {
+      playerBalls = 5;
+      botBalls = 5;
+      startGame();
+    } else {
+      alert("Спасибо за игру!");
+    }
+  }
+
+  window.Game = startGame;
+})();
